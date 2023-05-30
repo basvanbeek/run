@@ -637,7 +637,7 @@ func (g *Group) Run(args ...string) (err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	errs := make(chan error, len(s)+len(x))
 	hasServices = true
-	stopped := atomic.Bool{}
+	var stopped int32
 
 	// run each Service
 	for idx, svc := range s {
@@ -651,7 +651,7 @@ func (g *Group) Run(args ...string) (err error) {
 			// do not start Serve if other services signaled termination, to prevent
 			// a race where stop may have been called for this unit already as that would leave
 			// the unit running forever
-			if !stopped.Load() {
+			if atomic.LoadInt32(&stopped) == 0 {
 				err = svc.Serve()
 			}
 			errs <- err
@@ -660,9 +660,6 @@ func (g *Group) Run(args ...string) (err error) {
 	// run each ServiceContext
 	for idx, svc := range x {
 		go func(itemNr int, svc ServiceContext) {
-			if stopped.Load() {
-				return
-			}
 			var err error
 			l := g.Logger.With(
 				"name", svc.Name(),
@@ -672,7 +669,7 @@ func (g *Group) Run(args ...string) (err error) {
 			// do not start Serve if other services signaled termination, to prevent
 			// a race where stop may have been called for this unit already as that would leave
 			// the unit running forever
-			if !stopped.Load() {
+			if atomic.LoadInt32(&stopped) == 0 {
 				err = svc.ServeContext(ctx)
 			}
 			errs <- err
@@ -682,7 +679,7 @@ func (g *Group) Run(args ...string) (err error) {
 	// wait for the first Service or ServiceContext to stop and special case
 	// its error as the originator
 	err = <-errs
-	stopped.Store(true)
+	atomic.SwapInt32(&stopped, 1)
 
 	// signal all Service and ServiceContext Units to stop
 	cancel()
