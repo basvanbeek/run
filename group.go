@@ -25,6 +25,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync/atomic"
 
 	color "github.com/logrusorgru/aurora"
 	"github.com/spf13/pflag"
@@ -505,30 +506,30 @@ func (g *Group) RunConfig(args ...string) (err error) {
 //
 // The following phases are executed in the following sequence:
 //
-//   Initialization phase (serially, in order of Unit registration)
-//     - Initialize()     Initialize Unit's supporting this interface.
+//	Initialization phase (serially, in order of Unit registration)
+//	  - Initialize()     Initialize Unit's supporting this interface.
 //
-//   Config phase (serially, in order of Unit registration)
-//     - FlagSet()        Get & register all FlagSets from Config Units.
-//     - Flag Parsing     Using the provided args (os.Args if empty).
-//     - Validate()       Validate Config Units. Exit on first error.
+//	Config phase (serially, in order of Unit registration)
+//	  - FlagSet()        Get & register all FlagSets from Config Units.
+//	  - Flag Parsing     Using the provided args (os.Args if empty).
+//	  - Validate()       Validate Config Units. Exit on first error.
 //
-//   PreRunner phase (serially, in order of Unit registration)
-//     - PreRun()         Execute PreRunner Units. Exit on first error.
+//	PreRunner phase (serially, in order of Unit registration)
+//	  - PreRun()         Execute PreRunner Units. Exit on first error.
 //
-//   Service and ServiceContext phase (concurrently)
-//     - Serve()          Execute all Service Units in separate Go routines.
-//       ServeContext()   Execute all ServiceContext Units.
-//     - Wait             Block until one of the Serve() or ServeContext()
-//                        methods returns.
-//     - GracefulStop()   Call interrupt handlers of all Service Units and
-//                        cancel the context.Context provided to all the
-//                        ServiceContext units registered.
+//	Service and ServiceContext phase (concurrently)
+//	  - Serve()          Execute all Service Units in separate Go routines.
+//	    ServeContext()   Execute all ServiceContext Units.
+//	  - Wait             Block until one of the Serve() or ServeContext()
+//	                     methods returns.
+//	  - GracefulStop()   Call interrupt handlers of all Service Units and
+//	                     cancel the context.Context provided to all the
+//	                     ServiceContext units registered.
 //
-//   Run will return with the originating error on:
-//   - first Config.Validate()  returning an error
-//   - first PreRunner.PreRun() returning an error
-//   - first Service.Serve() or ServiceContext.ServeContext() returning
+//	Run will return with the originating error on:
+//	- first Config.Validate()  returning an error
+//	- first PreRunner.PreRun() returning an error
+//	- first Service.Serve() or ServiceContext.ServeContext() returning
 //
 // Note: it is perfectly acceptable to use Group without Service and
 // ServiceContext units. In this case Run will just return immediately after
@@ -636,6 +637,7 @@ func (g *Group) Run(args ...string) (err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	errs := make(chan error, len(s)+len(x))
 	hasServices = true
+	stopped := atomic.Bool{}
 
 	// run each Service
 	for idx, svc := range s {
@@ -646,20 +648,33 @@ func (g *Group) Run(args ...string) (err error) {
 				"item", fmt.Sprintf("(%d/%d)", itemNr, len(s)))
 			l.Debug("serve")
 			defer l.Debug("serve-exit", debugLogError(err)...)
-			err = svc.Serve()
+			// do not start Serve if other services signaled termination, to prevent
+			// a race where stop may have been called for this unit already as that would leave
+			// the unit running forever
+			if !stopped.Load() {
+				err = svc.Serve()
+			}
 			errs <- err
 		}(idx+1, svc)
 	}
 	// run each ServiceContext
 	for idx, svc := range x {
 		go func(itemNr int, svc ServiceContext) {
+			if stopped.Load() {
+				return
+			}
 			var err error
 			l := g.Logger.With(
 				"name", svc.Name(),
 				"item", fmt.Sprintf("(%d/%d)", itemNr, len(x)))
 			l.Debug("serve-context")
 			defer l.Debug("serve-context-exit", debugLogError(err)...)
-			err = svc.ServeContext(ctx)
+			// do not start Serve if other services signaled termination, to prevent
+			// a race where stop may have been called for this unit already as that would leave
+			// the unit running forever
+			if !stopped.Load() {
+				err = svc.ServeContext(ctx)
+			}
 			errs <- err
 		}(idx+1, svc)
 	}
@@ -667,6 +682,7 @@ func (g *Group) Run(args ...string) (err error) {
 	// wait for the first Service or ServiceContext to stop and special case
 	// its error as the originator
 	err = <-errs
+	stopped.Store(true)
 
 	// signal all Service and ServiceContext Units to stop
 	cancel()
