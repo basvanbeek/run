@@ -38,7 +38,7 @@ func TestRunGroupSvcLifeCycle(t *testing.T) {
 	var (
 		g       = run.Group{}
 		s       service
-		sc serviceContext
+		sc      serviceContext
 		irq     = make(chan error)
 		hasName bool
 	)
@@ -52,6 +52,10 @@ func TestRunGroupSvcLifeCycle(t *testing.T) {
 	g.Register(&test.TestSvc{
 		SvcName: "testsvc",
 		Execute: func() error {
+			// wait until the service has started to signal termination so that
+			// we can properly assert the full lifecycle has been executed. Otherwise, the service
+			// GracefulStop may be called before it starts
+			<-s.started
 			hasName = len(g.Name) > 0
 			return errIRQ
 		},
@@ -301,7 +305,18 @@ func TestRuntimeDeregister(t *testing.T) {
 
 			g.Register(&test.TestSvc{
 				SvcName: "testsvc",
-				Execute: func() error { return errIRQ },
+				Execute: func() error {
+					// wait until the service has started to signal termination so that
+					// we can properly assert the full lifecycle has been executed. Otherwise, the service
+					// GracefulStop may be called before it starts
+					if !d1 {
+						<-s1.started
+					}
+					if !d2 {
+						<-s2.started
+					}
+					return errIRQ
+				},
 			})
 
 			// start Group
@@ -399,6 +414,7 @@ type service struct {
 		serve  bool
 	}
 	closer      chan error
+	started     chan struct{}
 	customFlags *run.FlagSet
 }
 
@@ -435,11 +451,13 @@ func (s *service) Validate() error {
 func (s *service) PreRun() error {
 	s.preRun = true
 	s.closer = make(chan error, 5)
+	s.started = make(chan struct{})
 	return nil
 }
 
 func (s *service) Serve() error {
 	s.serve = true
+	close(s.started) // signal the Serve method has been called
 	err := <-s.closer
 	if err == errClose {
 		s.gracefulStop = true
@@ -492,10 +510,9 @@ var (
 )
 
 type serviceContext struct {
-	serve bool
+	serve       bool
 	contextDone bool
 }
-
 
 func (s serviceContext) Name() string {
 	return "svc-context"
