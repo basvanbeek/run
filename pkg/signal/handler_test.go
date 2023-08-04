@@ -16,6 +16,7 @@ package signal
 
 import (
 	"errors"
+	"syscall"
 	"testing"
 	"time"
 
@@ -107,4 +108,14 @@ func TestSignalHandlerSignals(t *testing.T) {
 		}
 
 	}
+}
+
+// sendHUP is for test purposes
+func (h *Handler) sendHUP() {
+	h.signal <- syscall.SIGHUP
+}
+
+// sendQUIT is for test purposes
+func (h *Handler) sendQUIT() {
+	h.signal <- syscall.SIGQUIT
 }

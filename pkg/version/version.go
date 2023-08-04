@@ -25,7 +25,9 @@ import (
 
 // gitDescribeHashIndexPattern matches the git describe hash index pattern in the version string.
 // The version string should be in the format:
-// 		<release tag>-<commits since release tag>-g<commit hash>-<branch name>
+//
+//	<release tag>-<commits since release tag>-g<commit hash>-<branch name>
+//
 // As an example: 0.6.6-rc1-15-g12345678-want-more-branch, the "g" prefix stands for "git"
 // (see: https://git-scm.com/docs/git-describe).
 var gitDescribeHashIndexPattern = regexp.MustCompile(`-[0-9]+(-g+)+`)
@@ -37,11 +39,12 @@ var gitCommitsAheadPattern = regexp.MustCompile(`[0-9]+`)
 // build is to be populated at build time using -ldflags -X.
 //
 // Example:
-//   VERSION_PATH    := github.com/tetratelabs/run/pkg/version
-//   VERSION_STRING  := $(shell git describe --tags --long)
-//   GIT_BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
-//   GO_LINK_VERSION := -X ${VERSION_PATH}.build=${VERSION_STRING}-${GIT_BRANCH_NAME}
-//   go build -ldflags '${GO_LINK_VERSION}'
+//
+//	VERSION_PATH    := github.com/tetratelabs/run/pkg/version
+//	VERSION_STRING  := $(shell git describe --tags --long)
+//	GIT_BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
+//	GO_LINK_VERSION := -X ${VERSION_PATH}.build=${VERSION_STRING}-${GIT_BRANCH_NAME}
+//	go build -ldflags '${GO_LINK_VERSION}'
 var build string
 
 // mainBranches is a list of (sorted) main branches/revisions.
@@ -85,7 +88,8 @@ func (g Git) String() string {
 
 // parseGit the given version string into a version object. The input version string
 // is in the format:
-//    <release tag>-<commits since release tag>-g<commit hash>-<branch name>
+//
+//	<release tag>-<commits since release tag>-g<commit hash>-<branch name>
 func parseGit(v string) Git {
 	// Here we try to find the "-<commits since release tag>-g"-part.
 	found := gitDescribeHashIndexPattern.FindStringIndex(v)

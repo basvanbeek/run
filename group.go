@@ -204,8 +204,7 @@ type Group struct {
 	s []Service
 	x []ServiceContext
 
-	configured   bool
-	hsRegistered bool
+	configured bool
 }
 
 // Register will inspect the provided objects implementing the Unit interface to

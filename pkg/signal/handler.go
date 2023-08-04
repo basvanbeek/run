@@ -25,12 +25,6 @@ import (
 	"github.com/tetratelabs/run"
 )
 
-// Error allows for creating constant errors instead of sentinel ones.
-type Error string
-
-// Error implements error.
-func (e Error) Error() string { return string(e) }
-
 // Handler implements a unix signal handler as run.GroupService.
 type Handler struct {
 	// RefreshCallback is called when a syscall.SIGHUP is received.
@@ -40,11 +34,10 @@ type Handler struct {
 	RefreshCallback func() error
 
 	signal chan os.Signal
-	cancel chan struct{}
 }
 
 // Name implements run.Unit.
-func (h Handler) Name() string {
+func (h *Handler) Name() string {
 	return "signal"
 }
 
@@ -85,14 +78,4 @@ func (h *Handler) ServeContext(ctx context.Context) error {
 			return nil
 		}
 	}
-}
-
-// sendHUP is for test purposes
-func (h *Handler) sendHUP() {
-	h.signal <- syscall.SIGHUP
-}
-
-// sendQUIT is for test purposes
-func (h *Handler) sendQUIT() {
-	h.signal <- syscall.SIGQUIT
 }
