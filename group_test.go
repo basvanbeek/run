@@ -23,8 +23,7 @@ import (
 	"testing"
 	"time"
 
-	multierror "github.com/hashicorp/go-multierror"
-
+	"github.com/basvanbeek/multierror"
 	"github.com/basvanbeek/run"
 	"github.com/basvanbeek/run/pkg/test"
 )

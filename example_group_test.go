@@ -1,3 +1,4 @@
+// Copyright (c) Bas van Beek 2024.
 // Copyright (c) Tetrate, Inc 2021.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +20,9 @@ import (
 	"fmt"
 	"os"
 
-	multierror "github.com/hashicorp/go-multierror"
 	"github.com/spf13/pflag"
 
+	"github.com/basvanbeek/multierror"
 	"github.com/basvanbeek/run"
 	"github.com/basvanbeek/run/pkg/signal"
 )
