@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	multierror "github.com/hashicorps/go-multierror"
+	multierror "github.com/hashicorp/go-multierror"
 	"github.com/spf13/pflag"
 
 	"github.com/basvanbeek/run"
