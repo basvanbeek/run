@@ -29,11 +29,11 @@ import (
 
 	color "github.com/logrusorgru/aurora"
 	"github.com/spf13/pflag"
-	"github.com/tetratelabs/multierror"
-	"github.com/tetratelabs/telemetry"
 
-	"github.com/tetratelabs/run/pkg/log"
-	"github.com/tetratelabs/run/pkg/version"
+	"github.com/basvanbeek/telemetry"
+
+	"github.com/basvanbeek/run/pkg/log"
+	"github.com/basvanbeek/run/pkg/version"
 )
 
 // BinaryName holds the template variable that will be replaced by the Group

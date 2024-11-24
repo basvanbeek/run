@@ -22,7 +22,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/tetratelabs/run"
+	"github.com/basvanbeek/run"
 )
 
 // Handler implements a unix signal handler as run.GroupService.

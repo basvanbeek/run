@@ -19,7 +19,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/tetratelabs/telemetry"
+	"github.com/basvanbeek/telemetry"
 )
 
 // Logger holds a very bare bones minimal implementation of telemetry.Logging.

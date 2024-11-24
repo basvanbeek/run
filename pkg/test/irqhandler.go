@@ -20,7 +20,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/tetratelabs/run"
+	"github.com/basvanbeek/run"
 )
 
 // IRQService is a run.Service and io.Closer implementation. It can be

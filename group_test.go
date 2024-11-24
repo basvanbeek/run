@@ -1,3 +1,4 @@
+// Copyright (c) Bas van Beek 2024.
 // Copyright (c) Tetrate, Inc 2021.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,10 +23,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tetratelabs/multierror"
+	multierror "github.com/hashicorp/go-multierror"
 
-	"github.com/tetratelabs/run"
-	"github.com/tetratelabs/run/pkg/test"
+	"github.com/basvanbeek/run"
+	"github.com/basvanbeek/run/pkg/test"
 )
 
 var (

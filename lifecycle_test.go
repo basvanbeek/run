@@ -1,3 +1,4 @@
+// Copyright (c) Bas van Beek 2024.
 // Copyright (c) Tetrate, Inc 2021.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tetratelabs/run"
+	"github.com/basvanbeek/run"
 )
 
 func TestLifecycle(t *testing.T) {

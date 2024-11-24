@@ -19,11 +19,11 @@ import (
 	"fmt"
 	"os"
 
+	multierror "github.com/hashicorps/go-multierror"
 	"github.com/spf13/pflag"
-	"github.com/tetratelabs/multierror"
 
-	"github.com/tetratelabs/run"
-	"github.com/tetratelabs/run/pkg/signal"
+	"github.com/basvanbeek/run"
+	"github.com/basvanbeek/run/pkg/signal"
 )
 
 func Example() {

@@ -19,9 +19,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/tetratelabs/run"
-	"github.com/tetratelabs/run/pkg/test"
-	"github.com/tetratelabs/telemetry"
+	"github.com/basvanbeek/run"
+	"github.com/basvanbeek/run/pkg/test"
+	"github.com/basvanbeek/telemetry"
 )
 
 // TestIRQService test if irqs returns a valid error for deliberate termination.

@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tetratelabs/run"
-	"github.com/tetratelabs/run/pkg/test"
+	"github.com/basvanbeek/run"
+	"github.com/basvanbeek/run/pkg/test"
 )
 
 var (

@@ -6,4 +6,4 @@ https://github.com/oklog/run/ package as its basis and enhances it with
 configuration registration and validation as well as pre-run phase logic.
 
 See godoc for information how to use  
-[run.Group](https://pkg.go.dev/github.com/tetratelabs/run)
+[run.Group](https://pkg.go.dev/github.com/basvanbeek/run)
