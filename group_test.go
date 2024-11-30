@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/basvanbeek/multierror"
+
 	"github.com/basvanbeek/run"
 	"github.com/basvanbeek/run/pkg/test"
 )
@@ -49,7 +50,7 @@ func TestRunGroupSvcLifeCycle(t *testing.T) {
 	g.Register(&sc)
 
 	// add our interrupter
-	g.Register(&test.TestSvc{
+	g.Register(&test.Svc{
 		SvcName: "testsvc",
 		Execute: func() error {
 			// wait until the service has started to signal termination so that
@@ -66,7 +67,7 @@ func TestRunGroupSvcLifeCycle(t *testing.T) {
 
 	select {
 	case err := <-irq:
-		if err != errIRQ {
+		if !errors.Is(err, errIRQ) {
 			t.Errorf("Expected proper close, got %v", err)
 		}
 		if s.groupName != g.Name {
@@ -127,6 +128,9 @@ func TestRunGroupMultiErrorHandling(t *testing.T) {
 
 	g.Register(cfg1, cfg2, cfg3)
 
+	if mErr == nil {
+		t.Fatalf("unexpected nil error")
+	}
 	if want, have := mErr.Error(), g.Run().Error(); want != have {
 		t.Errorf("invalid error payload returned:\nwant:\n%+v\nhave:\n%+v\n", want, have)
 	}
@@ -198,7 +202,7 @@ func TestDuplicateFlag(t *testing.T) {
 	g.Register(&flag1, &flag2)
 
 	// add our interrupter
-	g.Register(&test.TestSvc{
+	g.Register(&test.Svc{
 		SvcName: "irqsvc",
 		Execute: func() error { return errIRQ },
 	})
@@ -208,7 +212,7 @@ func TestDuplicateFlag(t *testing.T) {
 
 	select {
 	case err := <-irq:
-		if err != errIRQ {
+		if !errors.Is(err, errIRQ) {
 			t.Errorf("Expected proper close, got %v", err)
 		}
 		if flag1.value != 3 {
@@ -303,7 +307,7 @@ func TestRuntimeDeregister(t *testing.T) {
 				}))
 			}
 
-			g.Register(&test.TestSvc{
+			g.Register(&test.Svc{
 				SvcName: "testsvc",
 				Execute: func() error {
 					// wait until the service has started to signal termination so that
@@ -324,7 +328,7 @@ func TestRuntimeDeregister(t *testing.T) {
 
 			select {
 			case err := <-irq:
-				if err != errIRQ {
+				if !errors.Is(err, errIRQ) {
 					t.Errorf("Expected proper close, got %v", err)
 				}
 
@@ -359,7 +363,7 @@ type flagTestConfig struct {
 	value int
 }
 
-func (f flagTestConfig) Name() string {
+func (f *flagTestConfig) Name() string {
 	return fmt.Sprintf("flagtest%d", f.value)
 }
 
@@ -369,7 +373,7 @@ func (f *flagTestConfig) FlagSet() *run.FlagSet {
 	return flags
 }
 
-func (f flagTestConfig) Validate() error { return nil }
+func (f *flagTestConfig) Validate() error { return nil }
 
 type failingConfig struct {
 	e error
@@ -459,7 +463,7 @@ func (s *service) Serve() error {
 	s.serve = true
 	close(s.started) // signal the Serve method has been called
 	err := <-s.closer
-	if err == errClose {
+	if errors.Is(err, errClose) {
 		s.gracefulStop = true
 	}
 	close(s.closer)
@@ -482,11 +486,11 @@ type disablerService struct {
 	preRunner func()
 }
 
-func (d disablerService) Name() string {
+func (d *disablerService) Name() string {
 	return "disablerService"
 }
 
-func (d disablerService) FlagSet() *run.FlagSet {
+func (d *disablerService) FlagSet() *run.FlagSet {
 	return run.NewFlagSet("dummy flagset")
 }
 
@@ -514,7 +518,7 @@ type serviceContext struct {
 	contextDone bool
 }
 
-func (s serviceContext) Name() string {
+func (s *serviceContext) Name() string {
 	return "svc-context"
 }
 

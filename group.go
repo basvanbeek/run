@@ -32,9 +32,10 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/basvanbeek/multierror"
+	"github.com/basvanbeek/telemetry"
+
 	"github.com/basvanbeek/run/pkg/log"
 	"github.com/basvanbeek/run/pkg/version"
-	"github.com/basvanbeek/telemetry"
 )
 
 // BinaryName holds the template variable that will be replaced by the Group
@@ -184,8 +185,8 @@ type ServiceContext interface {
 	ServeContext(ctx context.Context) error
 }
 
-// Group builds on concepts from https://github.com/oklog/run to provide a
-// deterministic way to manage service lifecycles. It allows for easy
+// Group builds on concepts taken from https://github.com/oklog/run to provide
+// a deterministic way to manage service lifecycles. It allows for easy
 // composition of elegant monoliths as well as adding signal handlers, metrics
 // services, etc.
 type Group struct {

@@ -20,12 +20,13 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/basvanbeek/telemetry"
+
 	"github.com/basvanbeek/run"
 	"github.com/basvanbeek/run/pkg/test"
-	"github.com/basvanbeek/telemetry"
 )
 
-// TestIRQService test if irqs returns a valid error for deliberate termination.
+// TestIRQService test if IRQs returns a valid error for deliberate termination.
 func TestIRQService(t *testing.T) {
 	if ps := runtime.GOMAXPROCS(runtime.NumCPU()); ps < 3 {
 		t.Skipf("GOMAXPROCS not sufficient for test: %d", ps)
@@ -56,7 +57,7 @@ func TestIRQService(t *testing.T) {
 	t.Run("secondary thread", func(t *testing.T) {
 		t.Parallel()
 		defer func() {
-			irqs.Close()
+			_ = irqs.Close()
 			wg.Done()
 		}()
 	})

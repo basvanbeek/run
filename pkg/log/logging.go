@@ -60,7 +60,7 @@ func (l *Logger) Error(msg string, err error, keyValuePairs ...interface{}) {
 	log.Println(args...)
 }
 
-func (l Logger) With(keyValuePairs ...interface{}) telemetry.Logger {
+func (l *Logger) With(keyValuePairs ...interface{}) telemetry.Logger {
 	newLogger := l.Clone().(*Logger)
 	newLogger.args = append(newLogger.args, keyValuePairs...)
 	return newLogger
