@@ -40,7 +40,7 @@ func TestSignalHandlerStop(t *testing.T) {
 	g.Register(&s)
 
 	// add our interrupter
-	g.Register(&test.TestSvc{
+	g.Register(&test.Svc{
 		SvcName: "irqsvc",
 		Execute: func() error { return errClose },
 	})
@@ -86,7 +86,7 @@ func TestSignalHandlerSignals(t *testing.T) {
 		g.Register(&s)
 
 		// add our interrupter
-		g.Register(&test.TestSvc{
+		g.Register(&test.Svc{
 			SvcName: "irqsvc",
 			Execute: func() error {
 				tt.action()

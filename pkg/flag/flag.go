@@ -17,8 +17,8 @@ package flag
 
 import "fmt"
 
-// ValidationError provides the ability to create constant errors for run.Group
-// validation errors, e.g. incorrect flag values.
+// ValidationError provides the ability to create constant errors for
+// run.Group validation errors, e.g. incorrect flag values.
 type ValidationError string
 
 // Error implements the built-in error interface.

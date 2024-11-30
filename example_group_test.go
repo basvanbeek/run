@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/basvanbeek/multierror"
+
 	"github.com/basvanbeek/run"
 	"github.com/basvanbeek/run/pkg/signal"
 )
@@ -58,7 +59,7 @@ type PersonService struct {
 	closer chan error
 }
 
-func (p PersonService) Name() string {
+func (p *PersonService) Name() string {
 	return "person"
 }
 
@@ -75,7 +76,7 @@ func (p *PersonService) FlagSet() *pflag.FlagSet {
 
 // Validate implements run.Config and thus its configuration and flag handling
 // is automatically registered when adding the service to Group.
-func (p PersonService) Validate() error {
+func (p *PersonService) Validate() error {
 	var err error
 	if p.name == "" {
 		err = multierror.Append(err, errors.New("invalid name provided"))
@@ -100,13 +101,13 @@ func (p *PersonService) PreRun() error {
 // Serve implements run.GroupService and is executed at the service run phase of
 // Group in order of registration. All Serve methods must block until requested
 // to Stop or needing to fatally error.
-func (p PersonService) Serve() error {
+func (p *PersonService) Serve() error {
 	<-p.closer
 	return nil
 }
 
 // GracefulStop implements run.GroupService and is executed at the shutdown
 // phase of Group.
-func (p PersonService) GracefulStop() {
+func (p *PersonService) GracefulStop() {
 	close(p.closer)
 }

@@ -73,8 +73,8 @@ func (i *irqSvc) GracefulStop() {
 	}
 }
 
-// Close signals the IRQService to shutdown and run.Group is responsible for
-// cleaning up and calling GracefulStop() on all registered units.
+// Close signals the IRQService to shut down and run.Group is responsible
+// for cleaning up and calling GracefulStop() on all registered units.
 func (i *irqSvc) Close() error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
@@ -85,21 +85,21 @@ func (i *irqSvc) Close() error {
 	return nil
 }
 
-// TestSvc allows one to quickly bootstrap a run.GroupService from simple
-// functions. This is especially useful for unit tests.
-type TestSvc struct {
+// Svc allows one to quickly bootstrap a run.GroupService from
+// simple functions. This is especially useful for unit tests.
+type Svc struct {
 	SvcName   string
 	Execute   func() error
 	Interrupt func()
 }
 
 // Name implements run.Unit.
-func (t TestSvc) Name() string {
+func (t Svc) Name() string {
 	return t.SvcName
 }
 
 // Serve implements run.Service
-func (t TestSvc) Serve() error {
+func (t Svc) Serve() error {
 	if t.Execute == nil {
 		return errors.New("missing execute function")
 	}
@@ -107,7 +107,7 @@ func (t TestSvc) Serve() error {
 }
 
 // GracefulStop implements run.Service
-func (t TestSvc) GracefulStop() {
+func (t Svc) GracefulStop() {
 	if t.Interrupt == nil {
 		return
 	}
