@@ -34,6 +34,7 @@ import (
 	"github.com/basvanbeek/multierror"
 	"github.com/basvanbeek/telemetry"
 
+	"github.com/basvanbeek/run/pkg/flag"
 	"github.com/basvanbeek/run/pkg/log"
 	"github.com/basvanbeek/run/pkg/version"
 )
@@ -44,6 +45,12 @@ const BinaryName = "{{.Name}}"
 
 // Error allows for creating constant errors instead of sentinel ones.
 type Error string
+
+type FlagSet = flag.Set
+
+func NewFlagSet(name string) *FlagSet {
+	return flag.NewSet(name)
+}
 
 // Error implements error.
 func (e Error) Error() string { return string(e) }
@@ -58,21 +65,6 @@ const ErrBailEarlyRequest Error = "exit request from flag handler"
 // ErrRequestedShutdown can be used by Service implementations to gracefully
 // request a shutdown of the application. Group will then exit without errors.
 const ErrRequestedShutdown Error = "shutdown requested"
-
-// FlagSet holds a pflag.FlagSet as well as an exported Name variable for
-// allowing improved help usage information.
-type FlagSet struct {
-	*pflag.FlagSet
-	Name string
-}
-
-// NewFlagSet returns a new FlagSet for usage in Config objects.
-func NewFlagSet(name string) *FlagSet {
-	return &FlagSet{
-		FlagSet: pflag.NewFlagSet(name, pflag.ContinueOnError),
-		Name:    name,
-	}
-}
 
 // Unit is the default interface an object needs to implement for it to be able
 // to register with a Group.
@@ -181,7 +173,7 @@ type ServiceContext interface {
 	// Unit is embedded for Group registration and identification
 	Unit
 	// ServeContext starts the GroupService and blocks until the provided
-	// context is cancelled.
+	// context is canceled.
 	ServeContext(ctx context.Context) error
 }
 
@@ -198,7 +190,7 @@ type Group struct {
 	HelpText string
 	Logger   telemetry.Logger
 
-	f *FlagSet
+	f *flag.Set
 	i []Initializer
 	n []Namer
 	c []Config
@@ -214,7 +206,7 @@ type Group struct {
 // phases. If a Unit doesn't satisfy any of the bootstrap phases it is ignored
 // by Group.
 // The returned array of booleans is of the same size as the amount of provided
-// Units, signalling for each provided Unit if it successfully registered with
+// Units, signaling for each provided Unit if it successfully registered with
 // Group for at least one of the bootstrap phases or if it was ignored.
 //
 // Important: It is a design flaw for a Unit implementation to adhere to both
@@ -267,7 +259,7 @@ func (g *Group) Register(units ...Unit) []bool {
 // to see if it needs to de-register the objects for any of the Group bootstrap
 // phases.
 // The returned array of booleans is of the same size as the amount of provided
-// Units, signalling for each provided Unit if it successfully de-registered
+// Units, signaling for each provided Unit if it successfully de-registered
 // with Group for at least one of the bootstrap phases or if it was ignored.
 // It is generally safe to use Deregister at any bootstrap phase except at Serve
 // time (when it will have no effect).
@@ -348,7 +340,7 @@ func (g *Group) RunConfig(args ...string) (err error) {
 	}()
 
 	// run configuration stage
-	g.f = NewFlagSet(g.Name)
+	g.f = flag.NewSet(g.Name)
 	g.f.SortFlags = false // keep order of flag registration
 	g.f.Usage = func() {
 		fmt.Printf("Usage of %s:\n", g.Name)
@@ -367,7 +359,7 @@ func (g *Group) RunConfig(args ...string) (err error) {
 		showRunGroup bool
 	)
 
-	gFS := NewFlagSet("Common Service options")
+	gFS := flag.NewSet("Common Service options")
 	gFS.SortFlags = false
 	gFS.StringVarP(&name, "name", "n", g.Name, `name of this service`)
 	gFS.BoolVarP(&showVersion, "version", "v", false,
@@ -408,7 +400,7 @@ func (g *Group) RunConfig(args ...string) (err error) {
 	}
 
 	// register flags from attached Config objects
-	fs := make([]*FlagSet, len(g.c))
+	fs := make([]*flag.Set, len(g.c))
 	for idx := range g.c {
 		// a Config might have been de-registered
 		if g.c[idx] == nil {
@@ -597,15 +589,15 @@ func (g *Group) Run(args ...string) (err error) {
 				)
 				return nil
 			}
-			var err error
+			var intErr error
 			l := g.Logger.With(
 				"name", pr.Name(),
 				"item", fmt.Sprintf("(%d/%d)", itemNr, len(g.p)))
 			l.Debug("pre-run")
-			defer l.Debug("pre-run-exit", debugLogError(err)...)
-			err = pr.PreRun()
-			if err != nil {
-				return fmt.Errorf("pre-run %s: %w", pr.Name(), err)
+			defer l.Debug("pre-run-exit", debugLogError(intErr)...)
+			intErr = pr.PreRun()
+			if intErr != nil {
+				return fmt.Errorf("pre-run %s: %w", pr.Name(), intErr)
 			}
 			return nil
 		}(idx+1, g.p[idx]); err != nil {
@@ -643,37 +635,42 @@ func (g *Group) Run(args ...string) (err error) {
 	// run each Service
 	for idx, svc := range s {
 		go func(itemNr int, svc Service) {
-			var err error
+			var intErr error
 			l := g.Logger.With(
 				"name", svc.Name(),
 				"item", fmt.Sprintf("(%d/%d)", itemNr, len(s)))
 			l.Debug("serve")
-			defer l.Debug("serve-exit", debugLogError(err)...)
+			defer func() {
+				l.Debug("serve-exit", debugLogError(intErr)...)
+			}()
 			// do not start Serve if other services signaled termination, to prevent
 			// a race where stop may have been called for this unit already as that would leave
 			// the unit running forever
 			if atomic.LoadInt32(&stopped) == 0 {
-				err = svc.Serve()
+				intErr = svc.Serve()
 			}
-			errs <- err
+			errs <- intErr
 		}(idx+1, svc)
 	}
 	// run each ServiceContext
 	for idx, svc := range x {
 		go func(itemNr int, svc ServiceContext) {
-			var err error
+			var intErr error
 			l := g.Logger.With(
 				"name", svc.Name(),
 				"item", fmt.Sprintf("(%d/%d)", itemNr, len(x)))
 			l.Debug("serve-context")
-			defer l.Debug("serve-context-exit", debugLogError(err)...)
+			defer func() {
+				l.Debug("serve-context-exit", debugLogError(intErr)...)
+			}()
+
 			// do not start Serve if other services signaled termination, to prevent
 			// a race where stop may have been called for this unit already as that would leave
 			// the unit running forever
 			if atomic.LoadInt32(&stopped) == 0 {
-				err = svc.ServeContext(ctx)
+				intErr = svc.ServeContext(ctx)
 			}
-			errs <- err
+			errs <- intErr
 		}(idx+1, svc)
 	}
 
@@ -706,7 +703,7 @@ func (g *Group) Run(args ...string) (err error) {
 
 // ListUnits returns a list of all Group phases and the Units registered to each
 // of them.
-func (g Group) ListUnits() string {
+func (g *Group) ListUnits() string {
 	var (
 		s string
 		t = "cli"
