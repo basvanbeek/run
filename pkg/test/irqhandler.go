@@ -38,7 +38,7 @@ type IRQService interface {
 // Use the Close() method to shutdown a run.Group.
 // The GracefulStop() method will be called automatically when run.Group is
 // shutting down. Both Serve() and GracefulStop() should not be called outside
-// of the internal run.Group logic as run.Service is to be managed by run.Group
+// the internal run.Group logic as run.Service is to be managed by run.Group.
 func NewIRQService(cleanup func()) IRQService {
 	return &irqSvc{
 		irq: make(chan error),
@@ -98,7 +98,7 @@ func (t Svc) Name() string {
 	return t.SvcName
 }
 
-// Serve implements run.Service
+// Serve implements run.Service.
 func (t Svc) Serve() error {
 	if t.Execute == nil {
 		return errors.New("missing execute function")
@@ -106,7 +106,7 @@ func (t Svc) Serve() error {
 	return t.Execute()
 }
 
-// GracefulStop implements run.Service
+// GracefulStop implements run.Service.
 func (t Svc) GracefulStop() {
 	if t.Interrupt == nil {
 		return

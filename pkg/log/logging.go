@@ -68,7 +68,7 @@ func (l *Logger) With(keyValuePairs ...interface{}) telemetry.Logger {
 
 func (l *Logger) Clone() telemetry.Logger {
 	return &Logger{
-		args: append(([]interface{})(nil), l.args...),
+		args: append([]interface{}(nil), l.args...),
 	}
 }
 

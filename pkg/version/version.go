@@ -31,11 +31,11 @@ import (
 //
 // As an example: 0.6.6-rc1-15-g12345678-want-more-branch, the "g" prefix stands for "git"
 // (see: https://git-scm.com/docs/git-describe).
-var gitDescribeHashIndexPattern = regexp.MustCompile(`-[0-9]+(-g+)+`)
+var gitDescribeHashIndexPattern = regexp.MustCompile(`-\d+(-g+)+`)
 
 // gitCommitsAheadPattern captures the commits ahead pattern in the version substring (that should
 // be an integer).
-var gitCommitsAheadPattern = regexp.MustCompile(`[0-9]+`)
+var gitCommitsAheadPattern = regexp.MustCompile(`\d+`)
 
 // build is to be populated at build time using -ldflags -X.
 //
@@ -51,12 +51,12 @@ var build string
 // mainBranches is a list of (sorted) main branches/revisions.
 var mainBranches = []string{"HEAD", "main", "master"}
 
-// Show the service's version information
+// Show the service's version information.
 func Show(serviceName string) {
 	fmt.Println(serviceName + " " + Parse())
 }
 
-// Parse returns the parsed service's version information. (from raw git label)
+// Parse returns the parsed service's version information. (from raw git label).
 func Parse() string {
 	return parseGit(build).String()
 }

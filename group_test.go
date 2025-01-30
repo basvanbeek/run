@@ -57,7 +57,7 @@ func TestRunGroupSvcLifeCycle(t *testing.T) {
 			// we can properly assert the full lifecycle has been executed. Otherwise, the service
 			// GracefulStop may be called before it starts
 			<-s.started
-			hasName = len(g.Name) > 0
+			hasName = g.Name != ""
 			return errIRQ
 		},
 	})
@@ -226,7 +226,7 @@ func TestDuplicateFlag(t *testing.T) {
 	}
 }
 
-func TestRuntimeDeregister(t *testing.T) {
+func TestRuntimeDeregister(t *testing.T) { //nolint: gocognit,gocyclo // long test
 	for _, svcs := range [][]string{
 		{"--s1-disable"},
 		{"--s2-disable"},

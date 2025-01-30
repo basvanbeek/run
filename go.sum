@@ -4,9 +4,13 @@ github.com/basvanbeek/telemetry v0.0.0-20241124132412-5f45fd3d5ebd h1:ZJgqG+rQWF
 github.com/basvanbeek/telemetry v0.0.0-20241124132412-5f45fd3d5ebd/go.mod h1:FvTISBO7VxFPzSzJKo91sIDnvCawZ9f83wY+13wd9W0=
 github.com/basvanbeek/telemetry v0.1.0 h1:nx6i1RLj1UucjOoUp11kA1GuE3xaAbBn8sN7Tmx7KvE=
 github.com/basvanbeek/telemetry v0.1.0/go.mod h1:FvTISBO7VxFPzSzJKo91sIDnvCawZ9f83wY+13wd9W0=
+github.com/basvanbeek/telemetry v0.2.0 h1:IGHnjYFhkqT24e3P+6SQVjXPL9TXh1OfVd8xOcoZa2E=
+github.com/basvanbeek/telemetry v0.2.0/go.mod h1:FvTISBO7VxFPzSzJKo91sIDnvCawZ9f83wY+13wd9W0=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/logrusorgru/aurora v2.0.3+incompatible h1:tOpm7WcpBTn4fjmVfgpQq0EfczGlG91VSDkswnjF5A8=
 github.com/logrusorgru/aurora v2.0.3+incompatible/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
 github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
+github.com/spf13/pflag v1.0.6 h1:jFzHGLGAlb3ruxLB8MhbI6A8+AQX/2eW4qeyNZXNp2o=
+github.com/spf13/pflag v1.0.6/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
