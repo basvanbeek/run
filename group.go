@@ -28,7 +28,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	color "github.com/logrusorgru/aurora"
+	color "github.com/logrusorgru/aurora/v4"
 	"github.com/spf13/pflag"
 
 	"github.com/basvanbeek/multierror"
