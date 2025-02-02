@@ -34,12 +34,12 @@ func (s *sensitiveString) Type() string {
 	return "string"
 }
 
-func (Set) SensitiveStringVar(p *string, name, value, usage string) {
+func (s *Set) SensitiveStringVar(p *string, name, value, usage string) {
 	*p = value
-	pflag.VarP((*sensitiveString)(p), name, "", usage)
+	s.VarP((*sensitiveString)(p), name, "", usage)
 }
 
-func (Set) SensitiveStringVarP(p *string, name, shorthand, value, usage string) {
+func (s *Set) SensitiveStringVarP(p *string, name, shorthand, value, usage string) {
 	*p = value
-	pflag.VarP((*sensitiveString)(p), name, shorthand, usage)
+	s.VarP((*sensitiveString)(p), name, shorthand, usage)
 }
